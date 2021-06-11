@@ -1,3 +1,4 @@
+import 'package:dietician/Db.dart';
 import 'package:flutter/material.dart';
 
 class AppointmentPage extends StatefulWidget {
@@ -107,7 +108,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(primary: Colors.teal),
                 onPressed: (){
-
+                 // DatabaseHelper.insertAppointment(date, customerId, dietitianId)
                 },
                 child: Text("Create Appointment"),
               ),

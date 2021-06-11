@@ -11,8 +11,10 @@ import 'settings.dart';
 
 class homescreen extends StatefulWidget {
   String name;
-  homescreen(String name){
+  int id;
+  homescreen(String name, int id){
     this.name = name;
+    this.id = id;
   }
   @override
   _homescreenState createState() => _homescreenState();
@@ -222,7 +224,34 @@ class _homescreenState extends State<homescreen> {
                ),
                ),
                ),
-               Expanded(
+              FutureBuilder(
+                  future: DatabaseHelper.getDietitian(),
+                  builder: (context, AsyncSnapshot snapshot){
+                    if (snapshot.data == null) {
+                      print("null");
+                      return Container();
+                    } else if (snapshot.hasError) {
+                      print("haserror");
+                      return Icon(
+                        Icons.error,
+                        size: 110,
+                      );
+                    } else{
+                      return Expanded(
+                        flex: 3,
+                        child: ListView.separated(
+                            itemCount: 3,
+                            separatorBuilder: (BuildContext context, int index) => Divider(height: 2, color: Colors.transparent),
+                            scrollDirection: Axis.vertical,
+                            itemBuilder: (BuildContext context, int index) {
+                              return  dieticianCard("Dietician ${snapshot.data[index]["u_name"]}  ${snapshot.data[index]["u_surname"]} ", 100, "İstanbul", size,  context, 'asset/1.jpg');
+                            }
+                        ),
+                      );
+                    }
+                  }
+              ),
+             /* Expanded(
                  flex: 3,
                  child:ListView(children: <Widget>[
                   dieticianCard("Dietician Merve Tuna ", 100, "İstanbul", size,
@@ -231,7 +260,7 @@ class _homescreenState extends State<homescreen> {
                       context, 'asset/2.jpg'),
                   dieticianCard("Dietician Yeşim Güler ", 200, "Bursa", size,
                       context, 'asset/logo.jpg'),
-                ]),),
+                ]),),*/
             ],
           ),
         ));
@@ -298,9 +327,7 @@ dieticianCard(String name, int price, String location, Size size,
                     )),
                 FlatButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage("Altuntas",image)));
-
-
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage("$name",image)));
                   },
                   child: Text('Details'),
                 )

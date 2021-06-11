@@ -341,6 +341,9 @@ class DatabaseHelper {
     var res = await db.rawQuery(
         "SELECT Count(*) FROM $Users_table WHERE mail = '$mail' and password = '$password'");
 
+    var id = await db
+        .rawQuery("SELECT user_id FROM $Users_table WHERE mail = '$mail'");
+    print("id ${id[0].values.first}");
     var name = await db
         .rawQuery("SELECT u_name FROM $Users_table WHERE mail = '$mail'");
     var isDiet = await db
@@ -351,7 +354,7 @@ class DatabaseHelper {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) => homescreen(name[0].values.first)));
+                builder: (context) => homescreen(name[0].values.first, id[0].values.first)));
       } else {
         Navigator.pushReplacement(
             context,
@@ -390,11 +393,21 @@ class DatabaseHelper {
         [dietitianId, customerId, date]);
   }
 
-  static void getDietitian() async {
+  static void showAppointment(int id) async{
+    Database db = await instance.database;
+    var res = await db.rawQuery(
+        "SELECT * FROM $Appointment_table, $Users_table WHERE Appointment.user_id == Users.user_id and Users.user_id == $id ");
+    print(res);
+  }
+
+
+
+  static dynamic getDietitian() async {
     Database db = await instance.database;
     var res = await db.rawQuery(
         "SELECT * FROM $Dietitian_table, $Users_table WHERE Dietitian.dietatian_id == Users.user_id");
-    print(res);
+    print(res[0]);
+    return res;
   }
 
 
