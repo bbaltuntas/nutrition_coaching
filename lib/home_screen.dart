@@ -3,11 +3,16 @@ import 'package:dietician/profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:vector_math/vector_math_64.dart' as math;
 import 'Db.dart';
 import 'login.dart';
 
 class homescreen extends StatefulWidget {
+  String name;
+  homescreen(String name){
+    this.name = name;
+  }
   @override
   _homescreenState createState() => _homescreenState();
 }
@@ -16,12 +21,7 @@ class _homescreenState extends State<homescreen> {
 
   void initState() {
     super.initState();
-    getUsers();
-  }
-
-  getUsers() async{
-    var User = await dbHelper.queryAllRows(DatabaseHelper.Users_table);
-    print(User);
+    DatabaseHelper.getUsers(widget.name);
   }
 
 
@@ -77,7 +77,7 @@ class _homescreenState extends State<homescreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 0, 10),
                 child: Text(
-                 "Kerem Coşkun",
+                 "${widget.name}",
                   style: TextStyle(color: CupertinoColors.black, fontSize: 18),
                 ),
               ),
