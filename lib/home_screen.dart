@@ -7,6 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:vector_math/vector_math_64.dart' as math;
 import 'Db.dart';
 import 'login.dart';
+import 'settings.dart';
 
 class homescreen extends StatefulWidget {
   String name;
@@ -143,14 +144,14 @@ class _homescreenState extends State<homescreen> {
                           ),
                         ),
                         subtitle: Text(
-                          "Hello, Kerem",
+                          "Hello, ${widget.name}",
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 24,
                             color: Colors.black,
                           ),
                         ),
-                        trailing: ClipOval(child: Image.asset("asset/vesikalık.jpg")),
+                        trailing: Text("BMI: ${bmi==null ? "-" : '$bmi' }", style: TextStyle(fontSize: 15),),
                       ),
                       SizedBox(
                         height: 10,
@@ -233,10 +234,10 @@ listtile(String title, BuildContext context, Icon ic, dynamic data) {
   return InkWell(
     splashColor: Colors.grey,
     onTap: () {
-      /* if(title=="Favorites"){
+       if(title=="Settings"){
         Navigator.push(context,
-            MaterialPageRoute(builder: (context) => FavList(title)));
-      }else{
+            MaterialPageRoute(builder: (context) => settings()));
+      }/*else{
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => MovieList(title, data)));
       }*/

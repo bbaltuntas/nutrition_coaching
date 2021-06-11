@@ -26,6 +26,7 @@ class _loginState extends State<login> {
   TextEditingController _passwordController = new TextEditingController();
   TextEditingController _birthDateController = new TextEditingController();
   TextEditingController _genderController = new TextEditingController();
+  TextEditingController _mailController = new TextEditingController();
 
   bool login = true;
   List<bool> c = [true, false];
@@ -48,7 +49,7 @@ class _loginState extends State<login> {
 
     setState(() {    /*Remember me process*/
       rm=preferences.getBool("remember") ?? false;
-      _nameController.text= preferences.getString("name") ?? "";
+      _mailController.text= preferences.getString("mail") ?? "";
       _passwordController.text=preferences.getString("password")?? "";
     });
   }
@@ -128,7 +129,7 @@ class _loginState extends State<login> {
                               setState(() {
                                 rm = newValue;
                                 preferences.setBool("remember", rm);
-                                preferences.setString("name", _nameController.text);
+                                preferences.setString("mail", _mailController.text);
                                 preferences.setString("password", _passwordController.text);
 
                               });
@@ -219,11 +220,11 @@ class _loginState extends State<login> {
         Container(
           width: size.width * 0.83,
           child: TextField(
-            controller: _nameController,
+            controller: _mailController,
             obscureText: false,
             style: TextStyle(color: Colors.black),
             decoration: InputDecoration(
-              labelText: "Name",
+              labelText: "Mail",
               labelStyle: TextStyle(
                 color: CupertinoColors.black,
               ),
@@ -273,6 +274,8 @@ class _loginState extends State<login> {
         ),
         s == "Sign up" ? Column(
       children: [
+        SizedBox(height: size.height * 0.04),
+        formblock("Name",size, _nameController),
         SizedBox(height: size.height * 0.04),
         formblock("Surname",size, _surnameController),
         SizedBox(height: size.height * 0.04),
@@ -336,9 +339,9 @@ class _loginState extends State<login> {
                     if(s=="Sign up") {
                       /** MYSQL auth.*/
                       if(!dietitian){
-                        DatabaseHelper.InsertUser(_nameController.text, _surnameController.text, _birthDateController.text, gender ,  _passwordController.text,  0 );
+                        DatabaseHelper.InsertUser(_mailController.text ,_nameController.text, _surnameController.text, _birthDateController.text, gender ,  _passwordController.text,  0 );
                       }else{
-                        DatabaseHelper.InsertUser(_nameController.text, _surnameController.text, _birthDateController.text, gender ,  _passwordController.text,  1 );
+                        DatabaseHelper.InsertUser(_mailController.text,_nameController.text, _surnameController.text, _birthDateController.text, gender ,  _passwordController.text,  1 );
                       }
                       setState(() {
                         _scaffoldLogin.currentState
@@ -351,7 +354,7 @@ class _loginState extends State<login> {
                           preferences.setString("name", "");
                           preferences.setString("password", "");
                         }
-                        DatabaseHelper.checkUser(_nameController.text, _passwordController.text, context);
+                        DatabaseHelper.checkUser(_mailController.text, _passwordController.text, context);
                     }
                   });
               },
