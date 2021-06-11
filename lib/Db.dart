@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dietician/dietitian_profile.dart';
 import 'package:dietician/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -9,7 +10,6 @@ import 'login.dart';
 import 'profile.dart';
 
 class DatabaseHelper {
-
   static final _databaseName = "MyDatabase.db";
   static final _databaseVersion = 1;
 
@@ -28,10 +28,12 @@ class DatabaseHelper {
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
+
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
   // only have a single app-wide reference to the database
   static Database _database;
+
   Future<Database> get database async {
     if (_database != null) return _database;
     // lazily instantiate the db the first time it is accessed
@@ -44,8 +46,7 @@ class DatabaseHelper {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, _databaseName);
     return await openDatabase(path,
-        version: _databaseVersion,
-        onCreate: _onCreate);
+        version: _databaseVersion, onCreate: _onCreate);
   }
 
   // SQL code to create the database table
@@ -160,11 +161,10 @@ class DatabaseHelper {
   // Inserts a row in the database where each key in the Map is a column name
   // and the value is the column value. The return value is the id of the
   // inserted row.
-  Future<int> insert(Map<String, dynamic> row,String tableName) async {
+  Future<int> insert(Map<String, dynamic> row, String tableName) async {
     Database db = await instance.database;
     return await db.insert(tableName, row);
   }
-
 
   // All of the rows are returned as a list of maps, where each map is
   // a key-value list of columns.
@@ -177,34 +177,38 @@ class DatabaseHelper {
   // raw SQL commands. This method uses a raw query to give the row count.
   Future<int> queryRowCount(table) async {
     Database db = await instance.database;
-    return Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM $table'));
+    return Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM $table'));
   }
 
   Future<bool> find(var element, String tableName, String columName) async {
     Database db = await instance.database;
-    var result= await db.query(tableName,where: '$columName = ?',whereArgs: [element]);
+    var result = await db
+        .query(tableName, where: '$columName = ?', whereArgs: [element]);
 
-    if(result.length==0){
+    if (result.length == 0) {
       return true;
-    }else{
+    } else {
       return false;
     }
   }
 
-
   // We are assuming here that the id column in the map is set. The other
   // column values will be used to update the row.
-  Future<int> update(Map<String, dynamic> row,String tableName, columnId) async {
+  Future<int> update(
+      Map<String, dynamic> row, String tableName, columnId) async {
     Database db = await instance.database;
     int id = row[columnId];
-    return await db.update(tableName, row, where: '$columnId = ?', whereArgs: [id]);
+    return await db
+        .update(tableName, row, where: '$columnId = ?', whereArgs: [id]);
   }
 
   // Deletes the row specified by the id. The number of affected rows is
   // returned. This should be 1 as long as the row exists.
-  Future<int> delete(int id,String tableName, columnId) async {
+  Future<int> delete(int id, String tableName, columnId) async {
     Database db = await instance.database;
-    var data_id = await db.query(tableName,where: '$columnId = ?',whereArgs: [id]);
+    var data_id =
+        await db.query(tableName, where: '$columnId = ?', whereArgs: [id]);
     await db.delete(tableName, where: '$columnId = ?', whereArgs: [id]);
     return data_id[0][columnId];
   }
@@ -214,13 +218,18 @@ class DatabaseHelper {
     await db.delete(tableName);
   }
 
-static InitInserts() async{
-  Database db = await instance.database;
-  if (Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(user_id) FROM Users')) == 0){
-    db.rawInsert('INSERT INTO $Users_table(u_name, u_surname, birth_date, Gender, password, isDietitian, mail )'
-        ' VALUES("Kerem", "Coskun","01-03-2000",1,"12345",0,"kere"),("Seda", "Demirayak", "2000-01-02", 0,"12345",0, "seda"), ("Bora", "Altuntaş", "1995-04-06", 1,"12345",0,"bora"), ("Metehan", "Arık", "1997-07-09", 1,"12345",0,"mete") ');
-    db.rawInsert('INSERT INTO $Users_table(u_name, u_surname, birth_date, Gender, password, isDietitian, mail ) VALUES("Ali", "Portakal", "1965-01-05", 1,"12345",1,"ali"), ("Ayşe", "Gözen", "1989-04-09", 0,"12345",1,"ayse"),  ("Emrullah","Dağ", "1990-02-07", 1,"12345",1,"emrullah")');
-    db.rawInsert('''INSERT INTO $Address_table( district_name, city_name	, zip_code, user_id ) 
+  static InitInserts() async {
+    Database db = await instance.database;
+    if (Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(user_id) FROM Users')) ==
+        0) {
+      db.rawInsert(
+          'INSERT INTO $Users_table(u_name, u_surname, birth_date, Gender, password, isDietitian, mail )'
+          ' VALUES("Kerem", "Coskun","01-03-2000",1,"12345",0,"kere"),("Seda", "Demirayak", "2000-01-02", 0,"12345",0, "seda"), ("Bora", "Altuntaş", "1995-04-06", 1,"12345",0,"bora"), ("Metehan", "Arık", "1997-07-09", 1,"12345",0,"mete") ');
+      db.rawInsert(
+          'INSERT INTO $Users_table(u_name, u_surname, birth_date, Gender, password, isDietitian, mail ) VALUES("Ali", "Portakal", "1965-01-05", 1,"12345",1,"ali"), ("Ayşe", "Gözen", "1989-04-09", 0,"12345",1,"ayse"),  ("Emrullah","Dağ", "1990-02-07", 1,"12345",1,"emrullah")');
+      db.rawInsert(
+          '''INSERT INTO $Address_table( district_name, city_name	, zip_code, user_id ) 
     VALUES
     ("Zafer Mah. 15 temmuz Sok.", "Kayseri", "38000",  1),
     ("Ertuğrul Gazi mah. Aktaş Sok.", "Bursa", "16000",  2),
@@ -229,37 +238,41 @@ static InitInserts() async{
     ("Ertuğrul Gazi mah. Aktaş Sok.", "Bursa", "16000", 5),
     ("Cumhuriyet Mah. Yeşilçarşaf Sok.", "Kayseri", "38000", 6),
     ("Zafer Mah. 15 temmuz Sok.", "Kayseri", "38000", 7)''');
-    db.rawInsert('''INSERT INTO $Customer_table( customer_id, Weight, Height) 
+      db.rawInsert('''INSERT INTO $Customer_table( customer_id, Weight, Height) 
      VALUES
       (1,56,1.70),
       (2, 65, 1.85),
       (3, 62, 1.90),
       (4, 90, 1.55)
      ''');
-    db.rawInsert('''INSERT INTO $Hospital_table( hospital_name, Available_hours) 
+      db.rawInsert(
+          '''INSERT INTO $Hospital_table( hospital_name, Available_hours) 
      VALUES
        ("Tekden", "7.00/22.00"),
        ("Kayseri Devlet Hastanesi", "8.00/19.00")
      ''');
-    db.rawInsert('''INSERT INTO $Dietitian_table( dietatian_id, room_number, hospital_id) 
+      db.rawInsert(
+          '''INSERT INTO $Dietitian_table( dietatian_id, room_number, hospital_id) 
      VALUES
         (5,12,1),
         (6,25,1),
         (7,32,2)
      ''');
-    db.rawInsert('''INSERT INTO $Experience_table( exp_place, exp_field, exp_duration, dietatian_id) 
+      db.rawInsert(
+          '''INSERT INTO $Experience_table( exp_place, exp_field, exp_duration, dietatian_id) 
      VALUES
         ("Abdullah Gul University", "Fitness Dietatian", 4, 5),    
         ("Bosphorus University", "Pediatric Dietatian", 4, 6),    
         ("METU", "Chief Dietatian", 4, 7)
      ''');
 
-  db.rawInsert('''INSERT INTO $Appointment_table (dietatian_id, customer_id, a_date)
+      db.rawInsert(
+          '''INSERT INTO $Appointment_table (dietatian_id, customer_id, a_date)
      VALUES
       (5, 1, "17-05-2021 17:00"),
       (6, 3,  "17-05-2021 16:00")
      ''');
-  db.rawInsert('''INSERT INTO $DailyData_table (customer_id)
+      db.rawInsert('''INSERT INTO $DailyData_table (customer_id)
      VALUES
         (1 ),
         (2 ),
@@ -267,7 +280,8 @@ static InitInserts() async{
         (4)
      ''');
 
-  db.rawInsert('''INSERT INTO $Exercise_table (exercise_name, e_type, Duration , calories_burned, dailydata_id)
+      db.rawInsert(
+          '''INSERT INTO $Exercise_table (exercise_name, e_type, Duration , calories_burned, dailydata_id)
      VALUES
         ("Walking","slow", 90, 100,1),
         ("Walking","normal",20,25,2),
@@ -276,14 +290,15 @@ static InitInserts() async{
         ("Trekking","normal",64,120,2),
         ("Trekking","fast",100,200,3)
      ''');
-  db.rawInsert('''INSERT INTO $Nutrition_table (food_name, fat, carbohydrate, protein)
+      db.rawInsert(
+          '''INSERT INTO $Nutrition_table (food_name, fat, carbohydrate, protein)
      VALUES
        ("Bean", 16,85,36),
       ("Milk", 25,45,20),
       ("Brocoli", 2,15,12),
       ("Meat", 26,45,2)
      ''');
-    db.rawInsert('''INSERT INTO $Food_table(dailydata_id, food_name, quantity)
+      db.rawInsert('''INSERT INTO $Food_table(dailydata_id, food_name, quantity)
      VALUES
       (1, "Meat", 250),
       (1,"Milk", 200),
@@ -292,70 +307,97 @@ static InitInserts() async{
       (2,"Milk", 200),
       (2, "Bean", 150)
      ''');
+    }
   }
-}
 
-static void InsertUser(String mail, String name, String surname,String  bd, int gender, String pass, int dietitian) async{
-  Database db = await instance.database;
+  static void InsertUser(String mail, String name, String surname, String bd,
+      int gender, String pass, int dietitian) async {
+    Database db = await instance.database;
 
-  var res = await db.rawQuery(
-      "SELECT Count(*) FROM $Users_table WHERE mail = '$name' and password = '$pass'");
-  if (res[0].values.first==0) {
-    print(res[0].values.first);
-    db.rawInsert('''INSERT INTO $Users_table(mail, u_name, u_surname, birth_date, Gender, password, isDietitian ) 
+    var res = await db.rawQuery(
+        "SELECT Count(*) FROM $Users_table WHERE mail = '$name' and password = '$pass'");
+    if (res[0].values.first == 0) {
+      print(res[0].values.first);
+      db.rawInsert(
+          '''INSERT INTO $Users_table(mail, u_name, u_surname, birth_date, Gender, password, isDietitian ) 
                         VALUES ('$mail','$name', '$surname', '$bd', '$gender', '$pass', '$dietitian') ''');
 
-    var userId = await db.rawQuery( "SELECT user_id FROM $Users_table WHERE mail = '$mail' and password = '$pass'");
+      var userId = await db.rawQuery(
+          "SELECT user_id FROM $Users_table WHERE mail = '$mail' and password = '$pass'");
 
-    if(dietitian ==0 ){
-      db.rawInsert('''INSERT INTO $Customer_table(Customer_id) 
+      if (dietitian == 0) {
+        db.rawInsert('''INSERT INTO $Customer_table(Customer_id) 
                         VALUES ('${userId[0].values.first}') ''');
-
-    }
-    else{
-      db.rawInsert('''INSERT INTO $Dietitian_table( dietatian_id ) 
+      } else {
+        db.rawInsert('''INSERT INTO $Dietitian_table( dietatian_id ) 
                         VALUES ('${userId[0].values.first}') ''');
+      }
     }
   }
-}
 
-static void checkUser(String mail,String password, BuildContext context) async{
-  Database db = await instance.database;
-  var res = await db.rawQuery(
-      "SELECT Count(*) FROM $Users_table WHERE mail = '$mail' and password = '$password'");
+  static void checkUser(
+      String mail, String password, BuildContext context) async {
+    Database db = await instance.database;
+    var res = await db.rawQuery(
+        "SELECT Count(*) FROM $Users_table WHERE mail = '$mail' and password = '$password'");
 
-  var name = await db.rawQuery( "SELECT u_name FROM $Users_table WHERE mail = '$mail'");
-  var isDiet = await db.rawQuery( "SELECT isDietitian FROM $Users_table WHERE mail = '$mail'");
-  if (res[0].values.first==1) {
-    print(isDiet[0].values.first);
-    if(isDiet[0].values.first == 0){
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => homescreen(name[0].values.first)));
-    }else{
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfilePage('${name[0].values.first}','asset/1.jpg')));
+    var name = await db
+        .rawQuery("SELECT u_name FROM $Users_table WHERE mail = '$mail'");
+    var isDiet = await db
+        .rawQuery("SELECT isDietitian FROM $Users_table WHERE mail = '$mail'");
+    if (res[0].values.first == 1) {
+      print(isDiet[0].values.first);
+      if (isDiet[0].values.first == 0) {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => homescreen(name[0].values.first)));
+      } else {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    DietitianProfile('${name[0].values.first}')));
+      }
     }
-
   }
-}
 
-static void getUsers(String mail) async{
+  static void getUsers(String mail) async {
     Database db = await instance.database;
     var res = await db.rawQuery(
         "SELECT * FROM Users,Customer WHERE mail = '$mail' and Users.user_id = Customer.customer_id ");
 
     print(res);
-}
+  }
 
-static void updateWH(mail, name , weight, height ) async {
-  Database db = await instance.database;
-  var userId = await db.rawQuery( "SELECT user_id FROM $Users_table WHERE mail = '$mail'");
+  static void updateWH(mail, name, weight, height) async {
+    Database db = await instance.database;
+    var userId = await db
+        .rawQuery("SELECT user_id FROM $Users_table WHERE mail = '$mail'");
 
-  await db.rawUpdate('''
+    await db.rawUpdate('''
     UPDATE Customer 
     SET Weight = ?, Height = ? 
     WHERE user_id = ?
-    ''',
-      ['$weight', '$height', '${userId[0].values.first}']);
-}
+    ''', ['$weight', '$height', '${userId[0].values.first}']);
+  }
+
+  static void insertAppointment(
+      String date, int customerId, int dietitianId) async {
+    Database db = await instance.database;
+    db.rawInsert(
+        "INSERT INTO $Appointment_table(dietatian_id, customer_id, a_date) VALUES (?, ?, ?)",
+        [dietitianId, customerId, date]);
+  }
+
+  static void getDietitian() async {
+    Database db = await instance.database;
+    var res = await db.rawQuery(
+        "SELECT * FROM $Dietitian_table, $Users_table WHERE Dietitian.dietatian_id == Users.user_id");
+    print(res);
+  }
+
+
 
 
 }

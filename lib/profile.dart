@@ -1,17 +1,16 @@
-
-
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dietician/appointmentPage.dart';
+import 'package:dietician/home_screen.dart';
 import 'package:dietician/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-
 
 class ProfilePage extends StatefulWidget {
   final String lastName;
   BuildContext context;
   String image;
-  ProfilePage(this.lastName,this.image);
+
+  ProfilePage(this.lastName, this.image);
 
   @override
   _ProfilePageState createState() => _ProfilePageState(lastName);
@@ -19,6 +18,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String lastName;
+
   _ProfilePageState(this.lastName);
 
   Widget doctorProfile() {
@@ -29,35 +29,30 @@ class _ProfilePageState extends State<ProfilePage> {
         primaryColor: Colors.blueGrey,
       ),
       child: Container(
-              child: ListView.builder(
-                  itemCount:1,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return doctorCard(
-                      firstName:"Lorianne",
-
-                      lastName:
-                          "Bentro",
-                      prefix: "Dr",
-                      specialty:
-                            "Pediatric Dietitian",
-                      imagePath:
-                         widget.image,
-                      rank: 10,
-                      medicalEducation: "Curabitur turpis ex, iaculis nec sollicitudin id, lobortis nec mi. Sed fermentum sapien facilisis augue vulputate pulvinar. Etiam vehicula tortor ut est vestibulum pharetra ut in purus.",
-                      residency:
-                            "Curabitur turpis ex, iaculis nec sollicitudin id, lobortis nec mi. Sed fermentum sapien facilisis augue vulputate pulvinar. Etiam vehicula tortor ut est vestibulum pharetra ut in purus.",
-                      internship:
-                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent interdum arcu eget nibh gravida, sed tristique justo malesuada. Duis euismod dolor in tincidunt efficitur. Integer a iaculis enim.",
-
-                      biography:
-                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent interdum arcu eget nibh gravida, sed tristique justo malesuada. Duis euismod dolor in tincidunt efficitur. Integer a iaculis enim. Praesent rutrum orci vitae justo varius tempor. Donec iaculis leo sed elit pulvinar tempus. Nunc a mattis neque.",
-                    );
-                  }),
-            ),
+        child: ListView.builder(
+            itemCount: 1,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return doctorCard(
+                firstName: "Lorianne",
+                lastName: "Bentro",
+                prefix: "Dr",
+                specialty: "Pediatric Dietitian",
+                imagePath: widget.image,
+                rank: 10,
+                medicalEducation:
+                    "Curabitur turpis ex, iaculis nec sollicitudin id, lobortis nec mi. Sed fermentum sapien facilisis augue vulputate pulvinar. Etiam vehicula tortor ut est vestibulum pharetra ut in purus.",
+                residency:
+                    "Curabitur turpis ex, iaculis nec sollicitudin id, lobortis nec mi. Sed fermentum sapien facilisis augue vulputate pulvinar. Etiam vehicula tortor ut est vestibulum pharetra ut in purus.",
+                internship:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent interdum arcu eget nibh gravida, sed tristique justo malesuada. Duis euismod dolor in tincidunt efficitur. Integer a iaculis enim.",
+                biography:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent interdum arcu eget nibh gravida, sed tristique justo malesuada. Duis euismod dolor in tincidunt efficitur. Integer a iaculis enim. Praesent rutrum orci vitae justo varius tempor. Donec iaculis leo sed elit pulvinar tempus. Nunc a mattis neque.",
+              );
+            }),
+      ),
     );
-
   }
 
   Widget doctorCard({
@@ -291,9 +286,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: FlatButton(
                           color: Colors.transparent,
                           splashColor: Colors.black26,
-                          onPressed: () {
-
-                          },
+                          onPressed: () {},
                           child: Text(
                             specialty ?? "specialty not found",
                             style: TextStyle(
@@ -438,7 +431,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                     )
                                   : Container(),
-
                             ],
                           ),
                         ),
@@ -509,6 +501,12 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => AppointmentPage()));
+        },
+      ),
       appBar: StandardAppBar(),
       body: SingleChildScrollView(
         child: Container(
@@ -517,8 +515,9 @@ class _ProfilePageState extends State<ProfilePage> {
             gradient: LinearGradient(
               begin: Alignment(-1.0, 0.0),
               end: Alignment(1.0, 0.0),
-              colors: [Colors.red,
-              Colors.yellow,
+              colors: [
+                Colors.red,
+                Colors.yellow,
               ], // whitish to gray
             ),
           ),
@@ -595,10 +594,8 @@ Material appointmentTimes(String appointmentDay, context) {
           left: 20,
           right: 20,
         ),
-        onPressed: () {
-          print('View All Doctors Clicked');
-        },
-        textColor:Colors.lightGreen,
+        onPressed: () {},
+        textColor: Colors.lightGreen,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(7.5),
         ),

@@ -23,6 +23,11 @@ class _homescreenState extends State<homescreen> {
   void initState() {
     super.initState();
     DatabaseHelper.getUsers(widget.name);
+
+
+
+
+
   }
 
 
@@ -35,6 +40,9 @@ class _homescreenState extends State<homescreen> {
         child: Icon(Icons.add),
         onPressed: (){
           Navigator.push(context, MaterialPageRoute(builder: (context)=>MealPage()));
+          DatabaseHelper.getDietitian();
+
+
         },
       ),
         backgroundColor: Colors.transparent,
