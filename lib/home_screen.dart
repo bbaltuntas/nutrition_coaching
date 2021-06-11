@@ -1,3 +1,5 @@
+import 'package:dietician/meal.dart';
+import 'package:dietician/profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -28,6 +30,12 @@ class _homescreenState extends State<homescreen> {
     Size size = MediaQuery.of(context).size;
     bool isp = MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>MealPage()));
+        },
+      ),
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -281,9 +289,9 @@ dieticianCard(String name, int price, String location, Size size,
                     )),
                 FlatButton(
                   onPressed: () {
-                    /*Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => MovieList(title, data)));*/
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage("Altuntas",image)));
+
+
                   },
                   child: Text('Details'),
                 )
