@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
+import 'home_screen.dart';
 import 'login.dart';
 
 class DatabaseHelper {
@@ -20,6 +22,7 @@ class DatabaseHelper {
   static final Exercise_table = 'Exercise';
   static final Nutrition_table = 'Nutrition';
   static final Food_table = 'Food';
+  static final Relationship_table = 'Relationship';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -46,7 +49,7 @@ class DatabaseHelper {
   // SQL code to create the database table
   Future _onCreate(Database db, int version) async {
     await db.execute('''
-          CREATE TABLE $Users_table (
+          CREATE TABLE IF NOT EXIST $Users_table (
           user_id	 		INTEGER PRIMARY KEY,
         	u_name			TEXT NOT NULL,
           u_surname		TEXT NOT NULL,
@@ -57,29 +60,29 @@ class DatabaseHelper {
           )
           ''');
     await db.execute('''
-          CREATE TABLE $Customer_table (
+          CREATE TABLE IF NOT EXIST $Customer_table (
           customer_id	   INTEGER not null,
-	        Weight				 INTEGER not null,
-          Height				 INTEGER not null
+	        Weight				 INTEGER ,
+          Height				 INTEGER 
           )
           ''');
     await db.execute("""
-    create table $Hospital_table
+    create table IF NOT EXIST $Hospital_table
       (	hospital_id			INTEGER not null PRIMARY KEY,
         hospital_name		Text not null,
         Available_hours		text not null
       )
     """);
     await db.execute('''
-          CREATE TABLE $Dietitian_table (
+          CREATE TABLE IF NOT EXIST $Dietitian_table (
           dietatian_id		INTEGER not null,
-          room_number			INTEGER not null,
-          hospital_id 		INTEGER not null,
+          room_number			INTEGER ,
+          hospital_id 		INTEGER ,
           foreign key (hospital_id) references Hospital(hospital_id)
           )
           ''');
     await db.execute('''
-          CREATE TABLE $Address_table (
+          CREATE TABLE IF NOT EXIST $Address_table (
             district_name		varchar(50) not null,
             city_name			varchar(20) not null,
             zip_code			varchar(10),
@@ -88,7 +91,7 @@ class DatabaseHelper {
           )
           ''');
     await db.execute('''
-          CREATE TABLE $Experience_table (
+          CREATE TABLE IF NOT EXIST $Experience_table (
             exp_place 			varchar(50) not null,
             exp_field			varchar(50) not null,
             exp_duration		INTEGER not null,
@@ -97,7 +100,7 @@ class DatabaseHelper {
           )
           ''');
     await db.execute('''
-          CREATE TABLE $Appointment_table (
+          CREATE TABLE IF NOT EXIST $Appointment_table (
               dietatian_id		INTEGER,
               customer_id			INTEGER,
               a_date				TEXT,
@@ -106,7 +109,7 @@ class DatabaseHelper {
           )
           ''');
     await db.execute('''
-          CREATE TABLE $DailyData_table (
+          CREATE TABLE IF NOT EXIST $DailyData_table (
               dailydata_id INTEGER not null PRIMARY KEY,
               customer_id			INTEGER,
               TIMESTAMP dd_timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -114,7 +117,7 @@ class DatabaseHelper {
           )
           ''');
     await db.execute('''
-          CREATE TABLE $Exercise_table (
+          CREATE TABLE IF NOT EXIST $Exercise_table (
              exercise_name			TEXT not null,
               e_type			 		 TEXT not null,
               Duration 				INTEGER not null,
@@ -124,7 +127,7 @@ class DatabaseHelper {
           )
           ''');
     await db.execute('''
-          CREATE TABLE $Nutrition_table (
+          CREATE TABLE IF NOT EXIST $Nutrition_table (
               food_name varchar(20) not null PRIMARY KEY,
               fat					INTEGER not null,
               carbohydrate		INTEGER not null,
@@ -132,12 +135,20 @@ class DatabaseHelper {
           )
           ''');
     await db.execute('''
-          CREATE TABLE $Food_table (
+          CREATE TABLE IF NOT EXIST $Food_table (
                 dailydata_id	 		INTEGER not null,
                 food_name			varchar(20) not null,
                 quantity			varchar(50) not null,
                 foreign key (dailydata_id) references DailyData(dailydata_id),
                 foreign key (food_name) references Nutrition(food_name)
+          )
+          ''');
+    await db.execute('''
+          CREATE TABLE IF NOT EXIST $Relationship_table (
+                customer_id	 		INTEGER not null,
+                dietatian_id		INTEGER not null,
+                foreign key (dietatian_id) references $Dietitian_table(dietatian_id),
+                foreign key (customer_id) references $Customer_table(customer_id)
           )
           ''');
   }
@@ -199,29 +210,6 @@ class DatabaseHelper {
     Database db = await instance.database;
     await db.delete(tableName);
   }
-
-  /*Future<void> addAllToDB(String tableName,List<dynamic> list) async {
-    Database db = await instance.database;
-    HomeScreen.favoList=[];
-    for(int i=0;i<list.length;i++){
-      Map<String, dynamic> row =list[i];
-      HomeScreen.favoList.add(row);
-      insert(row, tableName);
-    }
-  }*/
-
-/*DATABASE INSERTION*/
-/*  void _insert(String title, String Movie_id, String overview,
-      String poster_path, String tableName) async {
-    Map<String, dynamic> row = {
-      DatabaseHelper.columnMovieID: Movie_id,
-      DatabaseHelper.columnTitle: title,
-      DatabaseHelper.columnOverview: overview,
-      DatabaseHelper.columnPoster: poster_path,
-    };
-    final id = await dbHelper.insert(row, tableName);
-  }
-*/
 
 static InitInserts() async{
   Database db = await instance.database;
@@ -303,12 +291,49 @@ static InitInserts() async{
      ''');
   }
 
+}
 
+static void InsertUser(String name, String surname,String  bd, int gender, String pass, int dietitian) async{
+  Database db = await instance.database;
 
+  var res = await db.rawQuery(
+      "SELECT Count(*) FROM $Users_table WHERE u_name = '$name' and password = '$pass'");
+  if (res[0].values.first==0) {
+    print(res[0].values.first);
+    db.rawInsert('''INSERT INTO $Users_table(u_name, u_surname, birth_date, Gender, password, isDietitian ) 
+                        VALUES ('$name', '$surname', '$bd', '$gender', '$pass', '$dietitian') ''');
 
+    var userId = await db.rawQuery( "SELECT user_id FROM $Users_table WHERE u_name = '$name' and password = '$pass'");
+
+    if(dietitian ==0 ){
+      db.rawInsert('''INSERT INTO $Customer_table(Customer_id) 
+                        VALUES ('${userId[0].values.first}') ''');
+
+    }
+    else{
+      db.rawInsert('''INSERT INTO $Dietitian_table( dietatian_id ) 
+                        VALUES ('${userId[0].values.first}') ''');
+    }
+  }
+}
+
+static void checkUser(String name,String password, BuildContext context) async{
+  Database db = await instance.database;
+  var res = await db.rawQuery(
+      "SELECT Count(*) FROM $Users_table WHERE u_name = '$name' and password = '$password'");
+  if (res[0].values.first==1) {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => homescreen(name)));
+  }
 
 }
 
+static void getUsers(name) async{
+    Database db = await instance.database;
+    var res = await db.rawQuery(
+        "SELECT * FROM Users,Customer WHERE u_name = '$name' and Users.user_id = Customer.customer_id ");
+
+    print(res);
+}
 
 
 }
