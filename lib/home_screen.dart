@@ -1,3 +1,4 @@
+import 'package:dietician/listingAppointment.dart';
 import 'package:dietician/meal.dart';
 import 'package:dietician/profile.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,6 +13,7 @@ import 'settings.dart';
 class homescreen extends StatefulWidget {
   String name;
   int id;
+  static int customerId;
   homescreen(String name, int id){
     this.name = name;
     this.id = id;
@@ -25,11 +27,7 @@ class _homescreenState extends State<homescreen> {
   void initState() {
     super.initState();
     DatabaseHelper.getUsers(widget.name);
-
-
-
-
-
+    homescreen.customerId = widget.id;
   }
 
 
@@ -61,10 +59,10 @@ class _homescreenState extends State<homescreen> {
                 color: CupertinoColors.activeOrange,
               ),
               onPressed: () {
-                /* Navigator.push(
+                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => FavList("Favorites")));*/
+                        builder: (context) => ListAppointmentPage(widget.id)));
               },
             ),
           ],
@@ -244,7 +242,7 @@ class _homescreenState extends State<homescreen> {
                             separatorBuilder: (BuildContext context, int index) => Divider(height: 2, color: Colors.transparent),
                             scrollDirection: Axis.vertical,
                             itemBuilder: (BuildContext context, int index) {
-                              return  dieticianCard("Dietician ${snapshot.data[index]["u_name"]}  ${snapshot.data[index]["u_surname"]} ", 100, "İstanbul", size,  context, 'asset/1.jpg');
+                              return  dieticianCard("Dietitian ${snapshot.data[index]["u_name"]}  ${snapshot.data[index]["u_surname"]} ", 100, "İstanbul", size,  context, 'asset/1.jpg',snapshot.data[index]["dietatian_id"]);
                             }
                         ),
                       );
@@ -300,7 +298,7 @@ listtile(String title, BuildContext context, Icon ic, dynamic data) {
 }
 
 dieticianCard(String name, int price, String location, Size size,
-    BuildContext context, String image) {
+    BuildContext context, String image,int id) {
   return Container(
     child: Column(
       children: [
@@ -327,7 +325,7 @@ dieticianCard(String name, int price, String location, Size size,
                     )),
                 FlatButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage("$name",image)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage("$name",image,id)));
                   },
                   child: Text('Details'),
                 )

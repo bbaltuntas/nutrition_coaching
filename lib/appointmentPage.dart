@@ -1,7 +1,13 @@
 import 'package:dietician/Db.dart';
+import 'package:dietician/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppointmentPage extends StatefulWidget {
+  int dietitianId;
+
+
+  AppointmentPage(this.dietitianId);
+
   @override
   _AppointmentPageState createState() => _AppointmentPageState();
 }
@@ -9,6 +15,7 @@ class AppointmentPage extends StatefulWidget {
 class _AppointmentPageState extends State<AppointmentPage> {
   String day = "";
   String hour = "";
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +115,13 @@ class _AppointmentPageState extends State<AppointmentPage> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(primary: Colors.teal),
                 onPressed: (){
-                 // DatabaseHelper.insertAppointment(date, customerId, dietitianId)
+
+                  String date = day + hour;
+
+                  print(date);
+                  print(homescreen.customerId);
+                  print(widget.dietitianId);
+                  DatabaseHelper.insertAppointment(date,homescreen.customerId,widget.dietitianId);
                 },
                 child: Text("Create Appointment"),
               ),

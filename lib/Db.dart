@@ -106,7 +106,7 @@ class DatabaseHelper {
     await db.execute('''
           CREATE TABLE IF NOT EXISTS $Appointment_table (
               dietatian_id		INTEGER,
-              customer_id			INTEGER,
+              dietatian_id			INTEGER,
               a_date				TEXT,
              foreign key (dietatian_id) references Dietatian(dietatian_id),
              foreign key (customer_id) references Customer(customer_id)
@@ -354,7 +354,8 @@ class DatabaseHelper {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) => homescreen(name[0].values.first, id[0].values.first)));
+                builder: (context) =>
+                    homescreen(name[0].values.first, id[0].values.first)));
       } else {
         Navigator.pushReplacement(
             context,
@@ -393,24 +394,42 @@ class DatabaseHelper {
         [dietitianId, customerId, date]);
   }
 
-  static void showAppointment(int id) async{
+  static Future<List> showAppointmentUser(int id) async {
     Database db = await instance.database;
     var res = await db.rawQuery(
-        "SELECT * FROM $Appointment_table, $Users_table WHERE Appointment.user_id == Users.user_id and Users.user_id == $id ");
+        "SELECT * FROM $Appointment_table, $Users_table WHERE Users.user_id == $id AND Appointment.customer_id == Users.user_id");
     print(res);
+
+    List<int> dietId = [];
+    for (int i = 0; i < res.length; i++) {
+      dietId.add(res[i]["dietatian_id"]);
+      print(dietId[i]);
+    }
+
+    List res1 = [];
+    for (int i = 0; i < res.length; i++) {
+      res1.add(await db.rawQuery(
+          "SELECT * FROM $Dietitian_table, $Users_table WHERE Dietitian.dietatian_id == ${dietId[i]} AND Users.user_id = Dietitian.dietatian_id"));
+    }
+    print(res1);
+    return [res, res1];
   }
-
-
 
   static dynamic getDietitian() async {
     Database db = await instance.database;
     var res = await db.rawQuery(
         "SELECT * FROM $Dietitian_table, $Users_table WHERE Dietitian.dietatian_id == Users.user_id");
     print(res[0]);
+
     return res;
   }
 
+  static void cancelAppointment(
+      int customer_id, int diet_id, String date) async {
+    Database db = await instance.database;
+    var res = await db.rawDelete(
+        'DELETE FROM $Appointment_table WHERE customer_id == "$customer_id" AND dietatian_id == "$diet_id" AND a_date == "$date"');
+    print(res);
 
-
-
+  }
 }

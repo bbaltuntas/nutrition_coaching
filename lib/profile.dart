@@ -9,8 +9,9 @@ class ProfilePage extends StatefulWidget {
   final String lastName;
   BuildContext context;
   String image;
+  int id;
 
-  ProfilePage(this.lastName, this.image);
+  ProfilePage(this.lastName, this.image,this.id);
 
   @override
   _ProfilePageState createState() => _ProfilePageState(lastName);
@@ -504,7 +505,7 @@ class _ProfilePageState extends State<ProfilePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AppointmentPage()));
+              MaterialPageRoute(builder: (context) => AppointmentPage(widget.id)));
         },
       ),
       appBar: StandardAppBar(),
