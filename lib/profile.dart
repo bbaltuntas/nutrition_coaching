@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dietician/Db.dart';
 import 'package:dietician/appointmentPage.dart';
 import 'package:dietician/home_screen.dart';
 import 'package:dietician/widgets.dart';
@@ -11,7 +12,7 @@ class ProfilePage extends StatefulWidget {
   String image;
   int id;
 
-  ProfilePage(this.lastName, this.image,this.id);
+  ProfilePage(this.lastName, this.image, this.id);
 
   @override
   _ProfilePageState createState() => _ProfilePageState(lastName);
@@ -454,42 +455,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-                sectionTitle(context, "Appointments"),
-                Container(
-                  margin: const EdgeInsets.only(
-                    bottom: 15.0,
-                  ),
-                  height: 60,
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.horizontal,
-                    children: <Widget>[
-                      appointmentDays("Monday", "June 15th", context),
-                      appointmentDays("Tuesday", "June 19th`", context),
-                      appointmentDays("Wednesday", "July 24th", context),
-                      appointmentDays("Thursday", "July 12th", context),
-                      appointmentDays("Friday", "July 13th", context),
-                      appointmentDays("Saturday", "August 7th", context),
-                      appointmentDays("Sunday", "August 9th", context),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.only(
-                    bottom: 15.0,
-                  ),
-                  height: 50,
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    scrollDirection: Axis.horizontal,
-                    children: <Widget>[
-                      appointmentTimes("9:00 AM", context),
-                      appointmentTimes("9:30 AM", context),
-                      appointmentTimes("10:00 AM", context),
-                      appointmentTimes("10:30 AM", context),
-                      appointmentTimes("11:00 AM", context),
-                    ],
-                  ),
+                sectionTitle(context, "Choose as a  your personal coach"),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 15.0),
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(primary: Colors.blueGrey),
+                      onPressed: () {
+                        DatabaseHelper.makeRelationship(
+                            homescreen.customerId, widget.id);
+                      },
+                      child: Text("Select")),
                 ),
               ],
             ),
@@ -504,8 +479,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AppointmentPage(widget.id)));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => AppointmentPage(widget.id)));
         },
       ),
       appBar: StandardAppBar(),

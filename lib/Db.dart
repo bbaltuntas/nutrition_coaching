@@ -361,7 +361,7 @@ class DatabaseHelper {
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    DietitianProfile('${name[0].values.first}')));
+                    DietitianProfile('${name[0].values.first}',id[0].values.first)));
       }
     }
   }
@@ -430,6 +430,29 @@ class DatabaseHelper {
     var res = await db.rawDelete(
         'DELETE FROM $Appointment_table WHERE customer_id == "$customer_id" AND dietatian_id == "$diet_id" AND a_date == "$date"');
     print(res);
+  }
+
+  static void makeRelationship(int customer_id, int diet_id) async {
+    Database db = await instance.database;
+    var res = await db.rawInsert(
+        "INSERT INTO $Relationship_table(customer_id, dietatian_id) VALUES('$customer_id', '$diet_id')");
+    print(res);
+  }
+
+  static dynamic showRelationship(int diet_id) async {
+    Database db = await instance.database;
+    var res = await db.rawQuery(
+        "SELECT customer_id FROM $Relationship_table WHERE dietatian_id == '$diet_id'");
+    print(res);
+    List customer = [];
+    for (int i = 0; i < res.length; i++) {
+      customer.add(await db.rawQuery(
+          "SELECT * FROM $Users_table WHERE user_id == '${res[i]["customer_id"]}'"));
+    }
+
+    return customer;
+
+
 
   }
 }
