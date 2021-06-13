@@ -354,7 +354,9 @@ class _loginState extends State<login> {
                           preferences.setString("name", "");
                           preferences.setString("password", "");
                         }
+
                         DatabaseHelper.checkUser(_mailController.text, _passwordController.text, context);
+
                     }
                   });
               },

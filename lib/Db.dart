@@ -45,6 +45,7 @@ class DatabaseHelper {
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, _databaseName);
+    print(documentsDirectory.path);
     return await openDatabase(path,
         version: _databaseVersion, onCreate: _onCreate);
   }
@@ -105,9 +106,9 @@ class DatabaseHelper {
           ''');
     await db.execute('''
           CREATE TABLE IF NOT EXISTS $Appointment_table (
-              dietatian_id		INTEGER,
-              dietatian_id			INTEGER,
-              a_date				TEXT,
+              dietatian_id INTEGER,
+              a_date TEXT,
+              customer_id INTEGER,
              foreign key (dietatian_id) references Dietatian(dietatian_id),
              foreign key (customer_id) references Customer(customer_id)
           )
@@ -117,6 +118,7 @@ class DatabaseHelper {
               dailydata_id INTEGER not null PRIMARY KEY,
               customer_id			INTEGER,
               TIMESTAMP dd_timestamp DEFAULT CURRENT_TIMESTAMP,
+              kcal INTEGER,
               foreign key (customer_id) references Customer(customer_id)
           )
           ''');
@@ -140,9 +142,9 @@ class DatabaseHelper {
           ''');
     await db.execute('''
           CREATE TABLE IF NOT EXISTS $Food_table (
-                dailydata_id	 		INTEGER not null,
-                food_name			varchar(20) not null,
-                quantity			varchar(50) not null,
+                dailydata_id INTEGER not null,
+                food_name	varchar(20) not null,
+                quantity varchar(50) not null,
                 foreign key (dailydata_id) references DailyData(dailydata_id),
                 foreign key (food_name) references Nutrition(food_name)
           )
@@ -195,8 +197,8 @@ class DatabaseHelper {
 
   // We are assuming here that the id column in the map is set. The other
   // column values will be used to update the row.
-  Future<int> update(
-      Map<String, dynamic> row, String tableName, columnId) async {
+  Future<int> update(Map<String, dynamic> row, String tableName,
+      columnId) async {
     Database db = await instance.database;
     int id = row[columnId];
     return await db
@@ -208,7 +210,7 @@ class DatabaseHelper {
   Future<int> delete(int id, String tableName, columnId) async {
     Database db = await instance.database;
     var data_id =
-        await db.query(tableName, where: '$columnId = ?', whereArgs: [id]);
+    await db.query(tableName, where: '$columnId = ?', whereArgs: [id]);
     await db.delete(tableName, where: '$columnId = ?', whereArgs: [id]);
     return data_id[0][columnId];
   }
@@ -221,11 +223,11 @@ class DatabaseHelper {
   static InitInserts() async {
     Database db = await instance.database;
     if (Sqflite.firstIntValue(
-            await db.rawQuery('SELECT COUNT(user_id) FROM Users')) ==
+        await db.rawQuery('SELECT COUNT(user_id) FROM Users')) ==
         0) {
       db.rawInsert(
           'INSERT INTO $Users_table(u_name, u_surname, birth_date, Gender, password, isDietitian, mail )'
-          ' VALUES("Kerem", "Coskun","01-03-2000",1,"12345",0,"kere"),("Seda", "Demirayak", "2000-01-02", 0,"12345",0, "seda"), ("Bora", "Altuntaş", "1995-04-06", 1,"12345",0,"bora"), ("Metehan", "Arık", "1997-07-09", 1,"12345",0,"mete") ');
+              ' VALUES("Kerem", "Coskun","01-03-2000",1,"12345",0,"kere"),("Seda", "Demirayak", "2000-01-02", 0,"12345",0, "seda"), ("Bora", "Altuntaş", "1995-04-06", 1,"12345",0,"bora"), ("Metehan", "Arık", "1997-07-09", 1,"12345",0,"mete") ');
       db.rawInsert(
           'INSERT INTO $Users_table(u_name, u_surname, birth_date, Gender, password, isDietitian, mail ) VALUES("Ali", "Portakal", "1965-01-05", 1,"12345",1,"ali"), ("Ayşe", "Gözen", "1989-04-09", 0,"12345",1,"ayse"),  ("Emrullah","Dağ", "1990-02-07", 1,"12345",1,"emrullah")');
       db.rawInsert(
@@ -240,10 +242,10 @@ class DatabaseHelper {
     ("Zafer Mah. 15 temmuz Sok.", "Kayseri", "38000", 7)''');
       db.rawInsert('''INSERT INTO $Customer_table( customer_id, Weight, Height) 
      VALUES
-      (1,56,1.70),
-      (2, 65, 1.85),
-      (3, 62, 1.90),
-      (4, 90, 1.55)
+      (1,56, 170),
+      (2, 65, 185),
+      (3, 62, 190),
+      (4, 90, 155)
      ''');
       db.rawInsert(
           '''INSERT INTO $Hospital_table( hospital_name, Available_hours) 
@@ -328,6 +330,8 @@ class DatabaseHelper {
       if (dietitian == 0) {
         db.rawInsert('''INSERT INTO $Customer_table(Customer_id) 
                         VALUES ('${userId[0].values.first}') ''');
+        db.rawInsert('''INSERT INTO $DailyData_table(Customer_id) 
+                        VALUES ('${userId[0].values.first}') ''');
       } else {
         db.rawInsert('''INSERT INTO $Dietitian_table( dietatian_id ) 
                         VALUES ('${userId[0].values.first}') ''');
@@ -335,8 +339,8 @@ class DatabaseHelper {
     }
   }
 
-  static void checkUser(
-      String mail, String password, BuildContext context) async {
+  static void checkUser(String mail, String password,
+      BuildContext context) async {
     Database db = await instance.database;
     var res = await db.rawQuery(
         "SELECT Count(*) FROM $Users_table WHERE mail = '$mail' and password = '$password'");
@@ -349,19 +353,22 @@ class DatabaseHelper {
     var isDiet = await db
         .rawQuery("SELECT isDietitian FROM $Users_table WHERE mail = '$mail'");
     if (res[0].values.first == 1) {
-      print(isDiet[0].values.first);
       if (isDiet[0].values.first == 0) {
+        int kcal = await DatabaseHelper.getCalorie(id[0].values.first);
+        double bmi = await DatabaseHelper.getBMI(id[0].values.first);
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    homescreen(name[0].values.first, id[0].values.first)));
+                    homescreen(name[0].values.first,
+                        id[0].values.first, kcal == null ? 0 : kcal, bmi)));
       } else {
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    DietitianProfile('${name[0].values.first}',id[0].values.first)));
+                    DietitianProfile(
+                        '${name[0].values.first}', id[0].values.first)));
       }
     }
   }
@@ -374,20 +381,19 @@ class DatabaseHelper {
     print(res);
   }
 
-  static void updateWH(mail, name, weight, height) async {
+  static void updateWH(int id, int weight, int height) async {
     Database db = await instance.database;
-    var userId = await db
-        .rawQuery("SELECT user_id FROM $Users_table WHERE mail = '$mail'");
 
     await db.rawUpdate('''
     UPDATE Customer 
     SET Weight = ?, Height = ? 
-    WHERE user_id = ?
-    ''', ['$weight', '$height', '${userId[0].values.first}']);
-  }
+    WHERE customer_id = ?
+    ''', ['$weight', '$height', '$id']);
 
-  static void insertAppointment(
-      String date, int customerId, int dietitianId) async {
+    }
+
+  static void insertAppointment(String date, int customerId,
+      int dietitianId) async {
     Database db = await instance.database;
     db.rawInsert(
         "INSERT INTO $Appointment_table(dietatian_id, customer_id, a_date) VALUES (?, ?, ?)",
@@ -424,8 +430,8 @@ class DatabaseHelper {
     return res;
   }
 
-  static void cancelAppointment(
-      int customer_id, int diet_id, String date) async {
+  static void cancelAppointment(int customer_id, int diet_id,
+      String date) async {
     Database db = await instance.database;
     var res = await db.rawDelete(
         'DELETE FROM $Appointment_table WHERE customer_id == "$customer_id" AND dietatian_id == "$diet_id" AND a_date == "$date"');
@@ -451,8 +457,57 @@ class DatabaseHelper {
     }
 
     return customer;
+  }
 
+  static dynamic getDietitianInfos(int id) async {
+    Database db = await instance.database;
+    var res = await db.rawQuery(
+        '''SELECT * FROM $Dietitian_table, $Experience_table,$Users_table,$Hospital_table 
+        WHERE Dietitian.dietatian_id == Users.user_id AND Dietitian.dietatian_id == "$id" 
+        AND Hospital.hospital_id == Dietitian.hospital_id AND Dietitian.dietatian_id == Experience.dietatian_id ''');
+    print(res[0]);
 
+    return res;
+  }
 
+  static void insertCalorie(int customer_id, int kcal) async {
+    Database db = await instance.database;
+
+    await db.rawUpdate('''
+    UPDATE DailyData 
+    SET kcal = ?
+    WHERE customer_id = ?
+    ''', ['$kcal', '$customer_id']);
+    getCalorie(customer_id);
+  }
+
+  static dynamic getCalorie(int id) async {
+    Database db = await instance.database;
+    var res = await db.rawQuery(
+        "SELECT kcal FROM $DailyData_table WHERE DailyData.customer_id == '${id}'");
+
+    if (res[0] == null) {
+      return 0;
+    } else {
+      return res[0].values.first;
+    }
+  }
+
+  static Future<double> getBMI(int id) async {
+    Database db = await instance.database;
+    var weightHeight = await db.rawQuery(
+        "SELECT Weight,Height FROM $Users_table,$Customer_table WHERE user_id = '$id' and Customer.customer_id = Users.user_id");
+    print(weightHeight[0]["Weight"]);
+    if (weightHeight[0]["Weight"] == null) {
+      return 0.0;
+    } else {
+      print(weightHeight[0].values.first);
+      var w = weightHeight[0].values.first;
+      var h = weightHeight[0].values.last;
+      print("error");
+      double bmi = (int.parse(w.toString()) * 10000.0) /
+          (int.parse(h.toString()) * int.parse(h.toString()));
+      return bmi;
+    }
   }
 }

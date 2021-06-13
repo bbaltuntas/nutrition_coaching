@@ -84,10 +84,10 @@ class _MealPageState extends State<MealPage> {
                     child: Container(
                         height: MediaQuery.of(context).size.height - 300.0,
                         child: ListView(children: [
-                          _buildFoodItem('asset/plate1.png', 'Salmon bowl', '\$24.00'),
-                          _buildFoodItem('asset/plate2.png', 'Spring bowl', '\$22.00'),
-                          _buildFoodItem('asset/plate6.png', 'Avocado bowl', '\$26.00'),
-                          _buildFoodItem('asset/plate5.png', 'Berry bowl', '\$24.00')
+                          _buildFoodItem('asset/plate1.png', 'Salmon bowl'),
+                          _buildFoodItem('asset/plate2.png', 'Spring bowl'),
+                          _buildFoodItem('asset/plate6.png', 'Avocado bowl'),
+                          _buildFoodItem('asset/plate5.png', 'Berry bowl')
                         ]))),
                     Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -147,13 +147,13 @@ class _MealPageState extends State<MealPage> {
     );
   }
 
-  Widget _buildFoodItem(String imgPath, String foodName, String price) {
+  Widget _buildFoodItem(String imgPath, String foodName) {
     return Padding(
         padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
         child: InkWell(
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => DetailsPage(heroTag: imgPath, foodName: foodName, foodPrice: price)
+              builder: (context) => DetailsPage(heroTag: imgPath, foodName: foodName)
             ));
           },
           child: Row(
@@ -183,14 +183,7 @@ class _MealPageState extends State<MealPage> {
                             fontWeight: FontWeight.bold
                           )
                         ),
-                        Text(
-                          price,
-                          style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontSize: 15.0,
-                            color: Colors.grey
-                          )
-                        )
+
                       ]
                     )
                   ]

@@ -7,54 +7,57 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String lastName;
   BuildContext context;
   String image;
   int id;
 
-  ProfilePage(this.lastName, this.image, this.id);
+  ProfilePage(this.image, this.id);
 
   @override
-  _ProfilePageState createState() => _ProfilePageState(lastName);
+  _ProfilePageState createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String lastName;
-
-  _ProfilePageState(this.lastName);
+  _ProfilePageState();
 
   Widget doctorProfile() {
     return Theme(
-      data: ThemeData(
-        primarySwatch: Colors.red,
-        accentColor: Colors.blueGrey,
-        primaryColor: Colors.blueGrey,
-      ),
-      child: Container(
-        child: ListView.builder(
-            itemCount: 1,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return doctorCard(
-                firstName: "Lorianne",
-                lastName: "Bentro",
-                prefix: "Dr",
-                specialty: "Pediatric Dietitian",
-                imagePath: widget.image,
-                rank: 10,
-                medicalEducation:
-                    "Curabitur turpis ex, iaculis nec sollicitudin id, lobortis nec mi. Sed fermentum sapien facilisis augue vulputate pulvinar. Etiam vehicula tortor ut est vestibulum pharetra ut in purus.",
-                residency:
-                    "Curabitur turpis ex, iaculis nec sollicitudin id, lobortis nec mi. Sed fermentum sapien facilisis augue vulputate pulvinar. Etiam vehicula tortor ut est vestibulum pharetra ut in purus.",
-                internship:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent interdum arcu eget nibh gravida, sed tristique justo malesuada. Duis euismod dolor in tincidunt efficitur. Integer a iaculis enim.",
-                biography:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent interdum arcu eget nibh gravida, sed tristique justo malesuada. Duis euismod dolor in tincidunt efficitur. Integer a iaculis enim. Praesent rutrum orci vitae justo varius tempor. Donec iaculis leo sed elit pulvinar tempus. Nunc a mattis neque.",
-              );
-            }),
-      ),
-    );
+        data: ThemeData(
+          primarySwatch: Colors.red,
+          accentColor: Colors.blueGrey,
+          primaryColor: Colors.blueGrey,
+        ),
+        child: FutureBuilder(
+            future: DatabaseHelper.getDietitianInfos(widget.id),
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.data == null) {
+                print("null");
+                return Container();
+              } else if (snapshot.hasError) {
+                print("haserror");
+                return Icon(
+                  Icons.error,
+                  size: 110,
+                );
+              } else {
+                return Container(
+                  child: doctorCard(
+                          firstName: "${snapshot.data[0]["u_name"]}",
+                          lastName: "${snapshot.data[0]["u_surname"]}",
+                          prefix: "Dr",
+                          specialty: "${snapshot.data[0]["exp_field"]}",
+                          imagePath: widget.image,
+                          rank: 10,
+                          medicalEducation:"${snapshot.data[0]["exp_duration"]} year at ${snapshot.data[0]["exp_place"]} in the field of ${snapshot.data[0]["exp_field"]}",
+                          residency:
+                              "Curabitur turpis ex, iaculis nec sollicitudin id, lobortis nec mi. Sed fermentum sapien facilisis augue vulputate pulvinar. Etiam vehicula tortor ut est vestibulum pharetra ut in purus.",
+                          internship:
+                              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent interdum arcu eget nibh gravida, sed tristique justo malesuada. Duis euismod dolor in tincidunt efficitur. Integer a iaculis enim.",
+                          biography:"Birth of year: ${snapshot.data[0]["birth_date"]}\nWork Place:${snapshot.data[0]["hospital_name"]} Hospital\nAvailable Hours:${snapshot.data[0]["Available_hours"]}",
+                        ),
+                );
+              }
+            }));
   }
 
   Widget doctorCard({

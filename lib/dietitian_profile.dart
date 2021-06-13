@@ -14,6 +14,8 @@ class DietitianProfile extends StatefulWidget {
 }
 
 class _DietitianProfileState extends State<DietitianProfile> {
+  TextEditingController controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -184,7 +186,7 @@ class _DietitianProfileState extends State<DietitianProfile> {
                 child: FutureBuilder(
                     future: DatabaseHelper.showRelationship(widget.id),
                     builder: (context, AsyncSnapshot snapshot) {
-                      if (snapshot.data == null) {
+                      if (snapshot.data == null || snapshot.data.isEmpty) {
                         print("null");
                         return Container();
                       } else if (snapshot.hasError) {
@@ -204,8 +206,93 @@ class _DietitianProfileState extends State<DietitianProfile> {
                               return Card(
                                 color: Color(0xffFBB97C),
                                 child: ListTile(
-                                  title:
-                                      Text("${snapshot.data[index][0]["u_name"]} ${snapshot.data[index][0]["u_surname"]}",style: TextStyle(fontSize: 18),),
+                                  onTap: () {
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return StatefulBuilder(
+                                          builder: (context, setState) {
+                                            return AlertDialog(
+                                              scrollable: true,
+                                              title: Text("Filtering"),
+                                              content: Stack(
+                                                children: <Widget>[
+                                                  Positioned(
+                                                    right: -40.0,
+                                                    top: -40.0,
+                                                    child: InkResponse(
+                                                      onTap: () {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                      },
+                                                      child: CircleAvatar(
+                                                        child:
+                                                            Icon(Icons.close),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Form(
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: <Widget>[
+                                                        Padding(
+                                                          padding:
+                                                              EdgeInsets.all(
+                                                                  8.0),
+                                                          child: TextFormField(
+                                                            controller: controller,
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                            decoration:
+                                                                InputDecoration(
+                                                              labelText:
+                                                                  "Daily Calorie",
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              actions: <Widget>[
+                                                MaterialButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Text("Cancel"),
+                                                  //color: Colors.orange,
+                                                ),
+                                                MaterialButton(
+                                                  onPressed: () {
+                                                    DatabaseHelper
+                                                        .insertCalorie(
+                                                            snapshot.data[index]
+                                                                [0]["user_id"],
+                                                            int.parse(controller
+                                                                .text));
+                                                  },
+                                                  child: Text("Save"),
+                                                  color: Colors.orange,
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                    );
+                                  },
+                                  title: Text(
+                                    "${snapshot.data[index][0]["u_name"]} ${snapshot.data[index][0]["u_surname"]}",
+                                    style: TextStyle(fontSize: 18),
+                                  ),
                                 ),
                               );
                               //dieticianCard("Dietitian ${snapshot.data[index]["u_name"]}  ${snapshot.data[index]["u_surname"]} ", 100, "İstanbul", size,  context, 'asset/1.jpg',snapshot.data[index]["dietatian_id"]);

@@ -14,37 +14,46 @@ class homescreen extends StatefulWidget {
   String name;
   int id;
   static int customerId;
-  homescreen(String name, int id){
+  int kcal;
+  double bmi;
+
+  homescreen(String name, int id, int kcal, double bmi) {
     this.name = name;
     this.id = id;
+    this.kcal = kcal;
+    this.bmi = bmi;
   }
+
   @override
   _homescreenState createState() => _homescreenState();
 }
-final today = DateTime.now();
-class _homescreenState extends State<homescreen> {
 
+final today = DateTime.now();
+
+class _homescreenState extends State<homescreen> {
   void initState() {
     super.initState();
     DatabaseHelper.getUsers(widget.name);
     homescreen.customerId = widget.id;
+    getB();
+
   }
-
-
+void getB()async{
+    widget.bmi = await DatabaseHelper.getBMI(widget.id);
+}
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     bool isp = MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>MealPage()));
-          DatabaseHelper.getDietitian();
-
-
-        },
-      ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MealPage()));
+            DatabaseHelper.getDietitian();
+          },
+        ),
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -59,7 +68,7 @@ class _homescreenState extends State<homescreen> {
                 color: CupertinoColors.activeOrange,
               ),
               onPressed: () {
-                 Navigator.push(
+                Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => ListAppointmentPage(widget.id)));
@@ -86,12 +95,12 @@ class _homescreenState extends State<homescreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 0, 10),
                 child: Text(
-                 "${widget.name}",
+                  "${widget.name}",
                   style: TextStyle(color: CupertinoColors.black, fontSize: 18),
                 ),
               ),
               listtile("Appointments", context,
-                  Icon(Icons.people, color: Colors.black), null),
+                  Icon(Icons.people, color: Colors.black), null, widget.id,widget.name,widget.kcal),
               listtile(
                   "Daily Activities",
                   context,
@@ -99,7 +108,8 @@ class _homescreenState extends State<homescreen> {
                     Icons.timeline,
                     color: Colors.black,
                   ),
-                  null),
+                  null,
+                  widget.id,widget.name,widget.kcal),
               listtile(
                   "Settings",
                   context,
@@ -107,7 +117,8 @@ class _homescreenState extends State<homescreen> {
                     Icons.favorite,
                     color: Colors.black,
                   ),
-                  null),
+                  null,
+                  widget.id,widget.name,widget.kcal),
               Container(
                 margin: EdgeInsets.fromLTRB(80, 25, 80, 0),
                 child: FlatButton(
@@ -139,7 +150,8 @@ class _homescreenState extends State<homescreen> {
                 ),
                 child: Container(
                   color: Colors.white,
-                  padding: const EdgeInsets.only(top: 40, left: 32, right: 16, bottom: 10),
+                  padding: const EdgeInsets.only(
+                      top: 40, left: 32, right: 16, bottom: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -159,7 +171,10 @@ class _homescreenState extends State<homescreen> {
                             color: Colors.black,
                           ),
                         ),
-                        trailing: Text("BMI: ${bmi==null ? "-" : '$bmi' }", style: TextStyle(fontSize: 15),),
+                        trailing: Text(
+                          "BMI: ${widget.bmi == null ? "-" : '${widget.bmi}'}",
+                          style: TextStyle(fontSize: 15),
+                        ),
                       ),
                       SizedBox(
                         height: 10,
@@ -170,6 +185,7 @@ class _homescreenState extends State<homescreen> {
                             width: size.width * 0.38,
                             height: size.width * 0.38,
                             progress: 0.7,
+                            kcal: widget.kcal,
                           ),
                           SizedBox(
                             width: 10,
@@ -214,17 +230,20 @@ class _homescreenState extends State<homescreen> {
                   ),
                 ),
               ),
-               SizedBox(height: 15),
-               Container(child: Text("Available Dietitians", style: TextStyle(
-                 fontWeight: FontWeight.w800,
-                 fontSize: 22,
-                 color: Colors.black,
-               ),
-               ),
-               ),
+              SizedBox(height: 15),
+              Container(
+                child: Text(
+                  "Available Dietitians",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
               FutureBuilder(
                   future: DatabaseHelper.getDietitian(),
-                  builder: (context, AsyncSnapshot snapshot){
+                  builder: (context, AsyncSnapshot snapshot) {
                     if (snapshot.data == null) {
                       print("null");
                       return Container();
@@ -234,22 +253,28 @@ class _homescreenState extends State<homescreen> {
                         Icons.error,
                         size: 110,
                       );
-                    } else{
+                    } else {
                       return Expanded(
                         flex: 3,
                         child: ListView.separated(
-                            itemCount: 3,
-                            separatorBuilder: (BuildContext context, int index) => Divider(height: 2, color: Colors.transparent),
+                            itemCount: snapshot.data.length,
+                            separatorBuilder: (BuildContext context,
+                                    int index) =>
+                                Divider(height: 2, color: Colors.transparent),
                             scrollDirection: Axis.vertical,
                             itemBuilder: (BuildContext context, int index) {
-                              return  dieticianCard("Dietitian ${snapshot.data[index]["u_name"]}  ${snapshot.data[index]["u_surname"]} ", 100, "İstanbul", size,  context, 'asset/1.jpg',snapshot.data[index]["dietatian_id"]);
-                            }
-                        ),
+                              return dieticianCard(
+                                  "Dietitian ${snapshot.data[index]["u_name"]}  ${snapshot.data[index]["u_surname"]} ",
+                                  "İstanbul",
+                                  size,
+                                  context,
+                                  'asset/1.jpg',
+                                  snapshot.data[index]["dietatian_id"]);
+                            }),
                       );
                     }
-                  }
-              ),
-             /* Expanded(
+                  }),
+              /* Expanded(
                  flex: 3,
                  child:ListView(children: <Widget>[
                   dieticianCard("Dietician Merve Tuna ", 100, "İstanbul", size,
@@ -265,14 +290,15 @@ class _homescreenState extends State<homescreen> {
   }
 }
 
-listtile(String title, BuildContext context, Icon ic, dynamic data) {
+listtile(String title, BuildContext context, Icon ic, dynamic data, int id,name,kcal) {
   return InkWell(
     splashColor: Colors.grey,
     onTap: () {
-       if(title=="Settings"){
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => settings()));
-      }/*else{
+      if (title == "Settings") {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => settings(id,name,kcal)));
+      }
+      /*else{
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => MovieList(title, data)));
       }*/
@@ -297,8 +323,8 @@ listtile(String title, BuildContext context, Icon ic, dynamic data) {
   );
 }
 
-dieticianCard(String name, int price, String location, Size size,
-    BuildContext context, String image,int id) {
+dieticianCard(String name, String location, Size size, BuildContext context,
+    String image, int id) {
   return Container(
     child: Column(
       children: [
@@ -325,7 +351,10 @@ dieticianCard(String name, int price, String location, Size size,
                     )),
                 FlatButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage("$name",image,id)));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ProfilePage(image, id)));
                   },
                   child: Text('Details'),
                 )
@@ -353,12 +382,6 @@ dieticianCard(String name, int price, String location, Size size,
                 Column(
                   children: [
                     SizedBox(height: 20),
-                    Container(
-                      child: Text(
-                        'Price Hourly: $price',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
                     SizedBox(height: 20),
                     Container(
                       child: Text(
@@ -381,70 +404,79 @@ dieticianCard(String name, int price, String location, Size size,
 }
 
 class _IngredientProgress extends StatelessWidget {
-final String ingredient;
-final int leftAmount;
-final double progress, width;
-final Color progressColor;
+  final String ingredient;
+  final int leftAmount;
+  final double progress, width;
+  final Color progressColor;
 
-const _IngredientProgress({Key key, this.ingredient, this.leftAmount, this.progress, this.progressColor, this.width}) : super(key: key);
+  const _IngredientProgress(
+      {Key key,
+      this.ingredient,
+      this.leftAmount,
+      this.progress,
+      this.progressColor,
+      this.width})
+      : super(key: key);
 
-@override
-Widget build(BuildContext context) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: <Widget>[
-      Text(
-        ingredient.toUpperCase(),
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          ingredient.toUpperCase(),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
         ),
-      ),
-      Row(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Stack(
-            children: <Widget>[
-              Container(
-                height: 10,
-                width: width,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  color: Colors.black12,
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                  height: 10,
+                  width: width,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                    color: Colors.black12,
+                  ),
                 ),
-              ),
-              Container(
-                height: 10,
-                width: width * progress,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                  color: progressColor,
-                ),
-              )
-            ],
-          ),
-          SizedBox(
-            width: 2,
-          ),
-          Text("${leftAmount}g left"),
-        ],
-      ),
-    ],
-  );
-}
+                Container(
+                  height: 10,
+                  width: width * progress,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                    color: progressColor,
+                  ),
+                )
+              ],
+            ),
+            SizedBox(
+              width: 2,
+            ),
+            Text("${leftAmount}g left"),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 class _RadialProgress extends StatelessWidget {
   final double height, width, progress;
+  int kcal;
 
-  const _RadialProgress({Key key, this.height, this.width, this.progress}) : super(key: key);
+  _RadialProgress({Key key, this.height, this.width, this.progress, this.kcal})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: _RadialPainter(
-        progress: 0.7,
+        progress: 1,
       ),
       child: Container(
         height: height,
@@ -455,7 +487,7 @@ class _RadialProgress extends StatelessWidget {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: "1731",
+                  text: "$kcal",
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w700,
@@ -479,7 +511,6 @@ class _RadialProgress extends StatelessWidget {
     );
   }
 }
-
 
 class _RadialPainter extends CustomPainter {
   final double progress;
@@ -505,6 +536,7 @@ class _RadialPainter extends CustomPainter {
       paint,
     );
   }
+
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;

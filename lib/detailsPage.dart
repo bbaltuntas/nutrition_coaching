@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 class DetailsPage extends StatefulWidget {
   final heroTag;
   final foodName;
-  final foodPrice;
 
-  DetailsPage({this.heroTag, this.foodName, this.foodPrice});
+  DetailsPage({this.heroTag, this.foodName});
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
@@ -87,11 +86,6 @@ class _DetailsPageState extends State<DetailsPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Text(widget.foodPrice,
-                            style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 20.0,
-                                color: Colors.grey)),
                         Container(height: 25.0, color: Colors.grey, width: 1.0),
                         Container(
                           width: 125.0,
@@ -173,7 +167,7 @@ class _DetailsPageState extends State<DetailsPage> {
                           height: 50.0,
                           child: Center(
                             child: Text(
-                              '\$52.00',
+                              "Add Meal",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontFamily: 'Montserrat'
