@@ -1,20 +1,23 @@
+import 'package:dietician/Db.dart';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'package:flutter/cupertino.dart';
 
-
 class settings extends StatefulWidget {
+  int id;
+  String name;
+  int kcal;
+
+  settings(this.id, this.name, this.kcal);
 
   @override
   _settingsState createState() => _settingsState();
-
 }
 
 TextEditingController _wController = new TextEditingController();
 TextEditingController _hController = new TextEditingController();
 String weight;
 String height;
-double bmi;
 
 class _settingsState extends State<settings> {
   @override
@@ -31,14 +34,20 @@ class _settingsState extends State<settings> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           formblock("Weight", size, _wController),
-          SizedBox(height: 15,),
+          SizedBox(
+            height: 15,
+          ),
           formblock("Height", size, _hController),
           ElevatedButton(
-              onPressed: (){
+              onPressed: () {
                 setState(() {
-                  weight = _wController.text ;
-                  height = _hController.text ;
-                  bmi =  int.parse(weight)/(int.parse(height)*int.parse(height)/10000);
+                  weight = _wController.text.toString();
+                  height = _hController.text.toString();
+                  var bmi = (int.parse(weight) * 10000.0) /
+                      (int.parse(height) * int.parse(height));
+                 DatabaseHelper.updateWH(
+                      widget.id, int.parse(weight), int.parse(height));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => homescreen(widget.name, widget.id, widget.kcal,bmi)));
                 });
               },
               child: Text("Update")),
@@ -48,8 +57,7 @@ class _settingsState extends State<settings> {
   }
 }
 
-
-formblock(String s, Size size ,TextEditingController contr){
+formblock(String s, Size size, TextEditingController contr) {
   return Padding(
     padding: const EdgeInsets.fromLTRB(25, 20, 0, 10),
     child: Container(
@@ -68,8 +76,7 @@ formblock(String s, Size size ,TextEditingController contr){
                 color: CupertinoColors.systemGreen,
                 width: 1.0,
               ),
-              borderRadius:
-              BorderRadius.circular(15.0)),
+              borderRadius: BorderRadius.circular(15.0)),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: CupertinoColors.systemGreen,
